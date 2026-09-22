@@ -1,7 +1,16 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Switch, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BIG_EVENT, BigEventCard } from '@/components/big-event-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
@@ -81,122 +90,133 @@ export default function HomeScreen() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <ThemedText type="title" style={styles.title}>
-          {getGreeting()}
-        </ThemedText>
-
-        <ThemedView type="backgroundElement" style={styles.card}>
-          <View style={styles.cardRow}>
-            <View style={styles.cardTextGroup}>
-              <ThemedText type="smallBold">Weather Theme</ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
-                {getWeatherStatus(enabled, isLoading, error, condition, isDay)}
-              </ThemedText>
-            </View>
-            <Switch value={enabled} onValueChange={setEnabled} trackColor={{ true: theme.tint }} />
-          </View>
-          <ThemedText type="small" themeColor="textSecondary">
-            When on, the app&apos;s colors shift to match the current sky at your chosen location.
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}>
+          <ThemedText type="title" style={styles.title}>
+            {getGreeting()}
           </ThemedText>
 
-          {enabled && (
-            <View style={styles.locationSection}>
-              <ThemedText type="smallBold">Location</ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
-                {locationMode === 'custom' && customLocationLabel
-                  ? `Using: ${customLocationLabel}`
-                  : 'Using your current location'}
-              </ThemedText>
-              <View style={styles.locationInputRow}>
-                <TextInput
-                  value={locationInput}
-                  onChangeText={(text) => {
-                    setLocationInput(text);
-                    setSearchResults([]);
-                    setSearchError(null);
-                  }}
-                  onSubmitEditing={handleSearch}
-                  placeholder="City or place name"
-                  placeholderTextColor={theme.textSecondary}
-                  style={[
-                    styles.locationInput,
-                    { color: theme.text, backgroundColor: theme.background },
-                  ]}
-                />
-                <Pressable
-                  onPress={handleSearch}
-                  style={({ pressed }) => [
-                    styles.locationButton,
-                    { backgroundColor: theme.tint },
-                    pressed && styles.pressed,
-                  ]}>
-                  {isSearching ? (
-                    <ActivityIndicator color="#ffffff" size="small" />
-                  ) : (
-                    <ThemedText style={styles.locationButtonText}>Search</ThemedText>
-                  )}
-                </Pressable>
-              </View>
-
-              {searchError && (
-                <ThemedText type="small" themeColor="textSecondary">
-                  {searchError}
-                </ThemedText>
-              )}
-
-              {searchResults.length > 0 && (
-                <View style={[styles.dropdown, { backgroundColor: theme.background }]}>
-                  {searchResults.map((candidate, index) => (
-                    <Pressable
-                      key={`${candidate.latitude},${candidate.longitude}`}
-                      onPress={() => handleSelect(candidate)}
-                      style={({ pressed }) => [
-                        styles.dropdownRow,
-                        index > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.backgroundSelected },
-                        pressed && { backgroundColor: theme.backgroundSelected },
-                      ]}>
-                      <ThemedText type="small">{candidate.label}</ThemedText>
-                    </Pressable>
-                  ))}
-                </View>
-              )}
-
-              {locationMode === 'custom' && (
-                <Pressable onPress={useCurrentLocation} hitSlop={8}>
-                  <ThemedText type="small" style={{ color: theme.tint }}>
-                    Use current location instead
-                  </ThemedText>
-                </Pressable>
-              )}
+          {BIG_EVENT && (
+            <View style={styles.section}>
+              <ThemedText style={styles.sectionHeading}>Big Event: Coming Up Soon!</ThemedText>
+              <BigEventCard event={BIG_EVENT} />
             </View>
           )}
-        </ThemedView>
 
-        {accessToken && availableCalendars.length > 0 && (
           <ThemedView type="backgroundElement" style={styles.card}>
-            <ThemedText type="smallBold">Calendars</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              Choose which of your Google calendars show up in this app.
-            </ThemedText>
-            <View style={styles.calendarList}>
-              {availableCalendars.map((calendar) => (
-                <View key={calendar.id} style={styles.calendarRow}>
-                  <View style={styles.calendarRowLeft}>
-                    <View style={[styles.colorDot, { backgroundColor: calendar.color }]} />
-                    <ThemedText type="small" numberOfLines={1} style={styles.calendarName}>
-                      {calendar.summary}
-                    </ThemedText>
-                  </View>
-                  <Switch
-                    value={!hiddenCalendarIds.has(calendar.id)}
-                    onValueChange={() => toggleCalendarHidden(calendar.id)}
-                    trackColor={{ true: theme.tint }}
-                  />
-                </View>
-              ))}
+            <View style={styles.cardRow}>
+              <View style={styles.cardTextGroup}>
+                <ThemedText type="smallBold">Weather Theme</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  {getWeatherStatus(enabled, isLoading, error, condition, isDay)}
+                </ThemedText>
+              </View>
+              <Switch value={enabled} onValueChange={setEnabled} trackColor={{ true: theme.tint }} />
             </View>
+            <ThemedText type="small" themeColor="textSecondary">
+              When on, the app&apos;s colors shift to match the current sky at your chosen location.
+            </ThemedText>
+
+            {enabled && (
+              <View style={styles.locationSection}>
+                <ThemedText type="smallBold">Location</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  {locationMode === 'custom' && customLocationLabel
+                    ? `Using: ${customLocationLabel}`
+                    : 'Using your current location'}
+                </ThemedText>
+                <View style={styles.locationInputRow}>
+                  <TextInput
+                    value={locationInput}
+                    onChangeText={(text) => {
+                      setLocationInput(text);
+                      setSearchResults([]);
+                      setSearchError(null);
+                    }}
+                    onSubmitEditing={handleSearch}
+                    placeholder="City or place name"
+                    placeholderTextColor={theme.textSecondary}
+                    style={[
+                      styles.locationInput,
+                      { color: theme.text, backgroundColor: theme.background },
+                    ]}
+                  />
+                  <Pressable
+                    onPress={handleSearch}
+                    style={({ pressed }) => [
+                      styles.locationButton,
+                      { backgroundColor: theme.tint },
+                      pressed && styles.pressed,
+                    ]}>
+                    {isSearching ? (
+                      <ActivityIndicator color="#ffffff" size="small" />
+                    ) : (
+                      <ThemedText style={styles.locationButtonText}>Search</ThemedText>
+                    )}
+                  </Pressable>
+                </View>
+
+                {searchError && (
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {searchError}
+                  </ThemedText>
+                )}
+
+                {searchResults.length > 0 && (
+                  <View style={[styles.dropdown, { backgroundColor: theme.background }]}>
+                    {searchResults.map((candidate, index) => (
+                      <Pressable
+                        key={`${candidate.latitude},${candidate.longitude}`}
+                        onPress={() => handleSelect(candidate)}
+                        style={({ pressed }) => [
+                          styles.dropdownRow,
+                          index > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.backgroundSelected },
+                          pressed && { backgroundColor: theme.backgroundSelected },
+                        ]}>
+                        <ThemedText type="small">{candidate.label}</ThemedText>
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+
+                {locationMode === 'custom' && (
+                  <Pressable onPress={useCurrentLocation} hitSlop={8}>
+                    <ThemedText type="small" style={{ color: theme.tint }}>
+                      Use current location instead
+                    </ThemedText>
+                  </Pressable>
+                )}
+              </View>
+            )}
           </ThemedView>
-        )}
+
+          {accessToken && availableCalendars.length > 0 && (
+            <ThemedView type="backgroundElement" style={styles.card}>
+              <ThemedText type="smallBold">Calendars</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                Choose which of your Google calendars show up in this app.
+              </ThemedText>
+              <View style={styles.calendarList}>
+                {availableCalendars.map((calendar) => (
+                  <View key={calendar.id} style={styles.calendarRow}>
+                    <View style={styles.calendarRowLeft}>
+                      <View style={[styles.colorDot, { backgroundColor: calendar.color }]} />
+                      <ThemedText type="small" numberOfLines={1} style={styles.calendarName}>
+                        {calendar.summary}
+                      </ThemedText>
+                    </View>
+                    <Switch
+                      value={!hiddenCalendarIds.has(calendar.id)}
+                      onValueChange={() => toggleCalendarHidden(calendar.id)}
+                      trackColor={{ true: theme.tint }}
+                    />
+                  </View>
+                ))}
+              </View>
+            </ThemedView>
+          )}
+        </ScrollView>
       </SafeAreaView>
     </ThemedView>
   );
@@ -212,6 +232,8 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     maxWidth: MaxContentWidth,
+  },
+  scrollContent: {
     paddingHorizontal: Spacing.four,
     paddingTop: Spacing.five,
     paddingBottom: BottomTabInset + Spacing.three,
@@ -220,6 +242,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 34,
     lineHeight: 40,
+  },
+  section: {
+    gap: Spacing.two,
+  },
+  sectionHeading: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: 700,
   },
   card: {
     borderRadius: Spacing.four,

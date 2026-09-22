@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ExternalLink } from '@/components/external-link';
+import { PracticeSection } from '@/components/practice-section';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
@@ -145,6 +146,8 @@ export default function ForYouScreen() {
               tintColor={theme.tint}
             />
           }>
+          <PracticeSection openInternshipCount={visibleInternships.length} />
+
           <View style={styles.section}>
             <ThemedText type="smallBold" style={styles.sectionLabel}>
               Internship Postings

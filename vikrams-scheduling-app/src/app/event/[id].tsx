@@ -24,10 +24,20 @@ import { useTheme } from '@/hooks/use-theme';
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const theme = useTheme();
-  const { displayEvents, setOverride, clearOverride, updateLocalEvent, deleteLocalEvent } =
-    useSchedule();
+  const {
+    displayEvents,
+    yearDisplayEvents,
+    setOverride,
+    clearOverride,
+    updateLocalEvent,
+    deleteLocalEvent,
+  } = useSchedule();
 
-  const event = useMemo(() => displayEvents.find((e) => e.id === id), [displayEvents, id]);
+  const event = useMemo(
+    () =>
+      displayEvents.find((e) => e.id === id) ?? yearDisplayEvents.find((e) => e.id === id),
+    [displayEvents, yearDisplayEvents, id]
+  );
 
   const initialDuration = useMemo(() => {
     if (!event) return { hours: 0, minutes: 0, seconds: 0 };

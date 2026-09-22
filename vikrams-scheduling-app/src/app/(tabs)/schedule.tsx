@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { LogYearView } from '@/components/log-year-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
@@ -138,8 +137,6 @@ function EventCard({ event, theme, checkable, isChecked, onToggle, onPress }: Ev
   );
 }
 
-type ViewMode = 'mainstream' | 'today' | 'log';
-
 export default function ScheduleScreen() {
   const theme = useTheme();
   const {
@@ -156,7 +153,6 @@ export default function ScheduleScreen() {
   } = useSchedule();
   const [checkedEventIds, setCheckedEventIds] = useState<Set<string>>(new Set());
   const [hiddenEventIds, setHiddenEventIds] = useState<Set<string>>(new Set());
-  const [viewMode, setViewMode] = useState<ViewMode>('mainstream');
   const pendingHideTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
 
   useEffect(() => {
@@ -197,55 +193,20 @@ export default function ScheduleScreen() {
   );
   const groupedEvents = useMemo(() => groupEventsByDay(visibleEvents), [visibleEvents]);
 
-  const todayEvents = useMemo(() => {
-    const todayKey = dayKey(startOfDay(new Date()));
-    return displayEvents.filter((event) => getEventDay(event).key === todayKey);
-  }, [displayEvents]);
-
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <ThemedText type="subtitle" style={styles.title}>
-          Schedule
-        </ThemedText>
-
-        {accessToken && (
-          <View style={styles.segmentedControl}>
-            <Pressable
-              onPress={() => setViewMode('mainstream')}
-              style={[
-                styles.segment,
-                viewMode === 'mainstream' && { backgroundColor: theme.tint },
-              ]}>
-              <ThemedText
-                type="smallBold"
-                themeColor={viewMode === 'mainstream' ? undefined : 'textSecondary'}
-                style={viewMode === 'mainstream' && styles.segmentTextActive}>
-                Mainstream
-              </ThemedText>
+        <View style={styles.titleRow}>
+          <ThemedText type="subtitle">Schedule</ThemedText>
+          <View style={styles.titleActions}>
+            <Pressable onPress={() => router.push('/import')} hitSlop={8} style={styles.pastEventsButton}>
+              <SymbolView name="square.and.arrow.down" tintColor={theme.tint} size={20} />
             </Pressable>
-            <Pressable
-              onPress={() => setViewMode('today')}
-              style={[styles.segment, viewMode === 'today' && { backgroundColor: theme.tint }]}>
-              <ThemedText
-                type="smallBold"
-                themeColor={viewMode === 'today' ? undefined : 'textSecondary'}
-                style={viewMode === 'today' && styles.segmentTextActive}>
-                Today's Events
-              </ThemedText>
-            </Pressable>
-            <Pressable
-              onPress={() => setViewMode('log')}
-              style={[styles.segment, viewMode === 'log' && { backgroundColor: theme.tint }]}>
-              <ThemedText
-                type="smallBold"
-                themeColor={viewMode === 'log' ? undefined : 'textSecondary'}
-                style={viewMode === 'log' && styles.segmentTextActive}>
-                Log
-              </ThemedText>
+            <Pressable onPress={() => router.push('/log')} hitSlop={8} style={styles.pastEventsButton}>
+              <SymbolView name="calendar" tintColor={theme.tint} size={20} />
             </Pressable>
           </View>
-        )}
+        </View>
 
         <ScrollView
           style={styles.scrollView}
@@ -295,7 +256,7 @@ export default function ScheduleScreen() {
             </ThemedView>
           )}
 
-          {!isLoadingEvents && !loadError && viewMode === 'mainstream' && (
+          {!isLoadingEvents && !loadError && (
             <>
               {visibleEvents.length === 0 && (
                 <ThemedView type="backgroundElement" style={styles.card}>
@@ -322,27 +283,6 @@ export default function ScheduleScreen() {
               ))}
             </>
           )}
-
-          {!isLoadingEvents && !loadError && viewMode === 'today' && (
-            <>
-              {todayEvents.length === 0 && (
-                <ThemedView type="backgroundElement" style={styles.card}>
-                  <ThemedText themeColor="textSecondary">No events today.</ThemedText>
-                </ThemedView>
-              )}
-              {todayEvents.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  theme={theme}
-                  checkable={false}
-                  onPress={() => router.push(`/event/${event.id}`)}
-                />
-              ))}
-            </>
-          )}
-
-          {viewMode === 'log' && <LogYearView />}
         </ScrollView>
 
         <Pressable
@@ -371,25 +311,21 @@ const styles = StyleSheet.create({
     maxWidth: MaxContentWidth,
     paddingTop: Spacing.four,
   },
-  title: {
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Spacing.four,
   },
-  segmentedControl: {
+  titleActions: {
     flexDirection: 'row',
-    marginHorizontal: Spacing.four,
-    marginTop: Spacing.three,
-    padding: 4,
-    borderRadius: Spacing.four,
-    backgroundColor: 'rgba(140, 115, 97, 0.15)',
+    gap: Spacing.two,
   },
-  segment: {
-    flex: 1,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.three,
+  pastEventsButton: {
+    width: 32,
+    height: 32,
     alignItems: 'center',
-  },
-  segmentTextActive: {
-    color: '#ffffff',
+    justifyContent: 'center',
   },
   scrollView: {
     flex: 1,
